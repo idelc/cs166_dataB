@@ -343,7 +343,7 @@ public class ProfNetwork {
          String email = in.readLine();
 
 	 //Creating empty contact\block lists for a user
-	 String query = String.format("INSERT INTO USR (userId, password, email, contact_list) VALUES ('%s','%s','%s')", login, password, email);
+	 String query = String.format("INSERT INTO USR (userId, password, email) VALUES ('%s','%s','%s')", login, password, email);
 
          esql.executeUpdate(query);
          System.out.println ("User successfully created!");
@@ -394,11 +394,11 @@ public class ProfNetwork {
          String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, newPassword);
          int userNum = esql.executeQuery(query);
          if (userNum > 0)
-                return login; // THIS NEEDS TO CHANGE
-         return null;
+                //return login; // THIS NEEDS TO CHANGE
+         return;
         }catch(Exception e){
          System.err.println (e.getMessage ());
-         return null;
+         return;
       }
     }
 
@@ -416,12 +416,12 @@ public class ProfNetwork {
             String query = String.format("INSERT INTO MESSAGE (userId, password, email, contact_list) VALUES ('%s','%s','%s')", senderId, receiverId, contents);
             int userNum = esql.executeQuery(query);
             if (userNum > 0){
-                return login;
+               // return login;
             }
-            return null;
+            return ;
         }catch(Exception e){
          System.err.println (e.getMessage ());
-         return null;
+         return ;
       }
     }
 
@@ -438,22 +438,23 @@ public class ProfNetwork {
             String query = String.format("SELECT * FROM MESSAGE WHERE receiverId = '%s'", receiverId);
             int userNum = esql.executeQuery(query);
             if (userNum > 0){
-                return login;
+                // return login;
             }
             System.out.println("1. Delete a specific message from a user to Friend List");
             System.out.println("2. Go back");
-            switch (readChoice()){
+            /*switch (readChoice()){
                case 1: DeleteMessage(esql); break;
                case 2: break; // NOT SURE IF THIS IS RIGHT
-            return null;
-        }catch(Exception e){
+            return;
+            }*/
+	}catch(Exception e){
          System.err.println (e.getMessage ());
-         return null;
+         return;
       }
     }
     
     /* Delete a message */
-    public static void ViewMessage(ProfNetwork esql){
+/*    public static void ViewMessage(ProfNetwork esql){
         try{
             System.out.print("\tEnter msgId of the message you want to delete: ");
             String receiverId = in.readLine();
@@ -468,10 +469,11 @@ public class ProfNetwork {
          return null;
       }
     }
-    
+*/    
     /* Accept or decline a request for connection  */
-    public static void SendRequest(ProfNetwork esql){
+    public static void ManageRequest(ProfNetwork esql){
         
     }
     /* */
 }//end ProfNetwork
+
