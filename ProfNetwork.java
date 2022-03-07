@@ -379,7 +379,17 @@ public class ProfNetwork {
    * View friends and can access friends profile. Additionally you can send a connection request or a message to them 
    */
     public static void FriendList(ProfNetwork esql){
-        
+	try{
+	System.out.print("\tEnter user login: ");
+        String login = in.readLine();
+        String query = String.format("SELECT C.connectionId FROM connection_usr C WHERE userId = '%s' AND status = 'Accept'", login);
+        int userNum = esql.executeQuery(query);
+        if (userNum <= 0){
+		System.out.print("No connections yet\n");
+	}
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+      } 
     }
 
     /*
