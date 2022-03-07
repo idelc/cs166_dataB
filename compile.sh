@@ -7,9 +7,9 @@ export PATH=$JAVA_HOME/bin:$PATH
 export CLASSPATH=$CLASSPATH:$PWD/pg73jdbc3.jar
 
 # compile the java program
-javac EmbeddedSQL.java
+javac ProfNetwork.java
 
 #run the java program
 #Use your database name, port number and login
-java EmbeddedSQL $USER"_DB" $PGPORT $USER
+java ProfNetwork $USER"_DB" $PGPORT $USER
 
