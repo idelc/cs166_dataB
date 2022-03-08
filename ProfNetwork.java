@@ -343,9 +343,11 @@ public class ProfNetwork {
          String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
          int userNum = esql.executeQuery(query);
          if (userNum > 0) {
-                System.out.print("\tIncorrect userid or password! Please try again! ");
                 return login;
-        }
+         }
+	 else {
+		System.out.print("\tIncorrect userid or password! Please try again! ");
+	 }
          return null;
       }catch(Exception e){
          System.err.println (e.getMessage ());
