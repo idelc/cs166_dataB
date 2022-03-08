@@ -276,7 +276,7 @@ public class ProfNetwork {
                 System.out.println("9. Log out");
                 switch (readChoice()){
                    case 1: FriendList(esql); break;
-                   case 2: UpdateProfile(esql); break;
+                   case 2: UpdateProfile(esql, authorisedUser); break;
                    case 3: NewMessage(esql); break;
                    case 4: SendRequest(esql); break;
                    case 5: ViewMessage(esql); break;
@@ -328,27 +328,30 @@ public class ProfNetwork {
       }while (true);
       return input;
    }//end readChoice
-
-   /*
-    * Creates a new user with privided login, passowrd and phoneNum
-    * An empty block and contact list would be generated and associated with a user
+	
+/*
+    * Check log in credentials for an existing user
+    * @return User login or null is the user does not exist
     **/
-   public static void CreateUser(ProfNetwork esql){
+   public static String LogIn(ProfNetwork esql){
       try{
          System.out.print("\tEnter user login: ");
          String login = in.readLine();
          System.out.print("\tEnter user password: ");
          String password = in.readLine();
-         System.out.print("\tEnter user email: ");
-         String email = in.readLine();
-
-	 //Creating empty contact\block lists for a user
-	 String query = String.format("INSERT INTO USR (userId, password, email) VALUES ('%s','%s','%s')", login, password, email);
-
-         esql.executeUpdate(query);
-         System.out.println ("User successfully created!");
+         
+         String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
+         int userNum = esql.executeQuery(query);
+         if (userNum > 0) {
+                return login;
+         }
+	 else {
+		System.out.print("\tIncorrect userid or password! Please try again! ");
+	 }
+         return null;
       }catch(Exception e){
          System.err.println (e.getMessage ());
+         return null;
       }
    }//end
 
@@ -395,15 +398,14 @@ public class ProfNetwork {
     /*
     * Updating user's password
     */
-    public static void UpdateProfile(ProfNetwork esql){
+    public static void UpdateProfile(ProfNetwork esql, String login){
         try{
-         System.out.print("\tEnter user login: ");
-         String login = in.readLine();
          System.out.print("\tEnter new password: ");
          String newPassword = in.readLine();
-         String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, newPassword);
+         String query = String.format("UPDATE USR SET password = '%s' WHERE userId = '%s'", newPassword, login);
          int userNum = esql.executeQuery(query);
          if (userNum > 0)
+                System.out.print("\tPassword failed to change! ");
                 //return login; // THIS NEEDS TO CHANGE
          return;
         }catch(Exception e){
@@ -411,6 +413,7 @@ public class ProfNetwork {
          return;
       }
     }
+
 
     /*
     * Send message to anyone on network 
@@ -464,7 +467,7 @@ public class ProfNetwork {
     }
     
     /* Delete a message */
-/*    public static void ViewMessage(ProfNetwork esql){
+/*    public static void DeleteMessage(ProfNetwork esql){
         try{
             System.out.print("\tEnter msgId of the message you want to delete: ");
             String receiverId = in.readLine();
