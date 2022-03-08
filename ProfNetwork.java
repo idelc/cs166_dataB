@@ -275,7 +275,7 @@ public class ProfNetwork {
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
-                   case 1: FriendList(esql); break;
+                   case 1: FriendList(esql, authorisedUser); break;
                    case 2: UpdateProfile(esql, authorisedUser); break;
                    case 3: NewMessage(esql); break;
                    case 4: SendRequest(esql); break;
@@ -381,15 +381,41 @@ public class ProfNetwork {
    /*
    * View friends and can access friends profile. Additionally you can send a connection request or a message to them 
    */
-    public static void FriendList(ProfNetwork esql){
+    public static void FriendList(ProfNetwork esql, string authUse){
 	try{
-	System.out.print("\tEnter user login: ");
-        String login = in.readLine();
-        String query = String.format("SELECT C.connectionId FROM connection_usr C WHERE userId = '%s' AND status = 'Accept'", login);
-        int userNum = esql.executeQuery(query);
-        if (userNum <= 0){
-		System.out.print("No connections yet\n");
-	}
+	// System.out.print("\tEnter user login: ");
+        // String login = in.readLine();
+        if (authUse != null) {
+              boolean usermenu = true;
+              while(usermenu) {
+                System.out.println("FRIENDS");
+                System.out.println("---------");
+                System.out.println("1. View Friend List");
+                System.out.println("2. View Friend's Profile");
+                System.out.println(".........................");
+                System.out.println("9. Go back");
+                switch (readChoice()){
+                   case 1:
+			String query = String.format("SELECT C.connectionId FROM connection_usr C WHERE userId = '%s' AND status = 'Accept'", authUse);
+		        int userNum = esql.executeQuery(query);
+       			if (userNum <= 0){
+               			 System.out.print("No connections yet\n");
+        		}
+			break;
+                   case 2:
+			System.out.print("\tEnter friend's username: ");
+        		String fUsr = in.readLine();
+       			String query = String.format("SELECT C.connectionId FROM connection_usr C WHERE connectionid = '%s' AND status = 'Accept'", fUsr);
+        		int userNum = esql.executeQuery(query);
+        		if (userNum == 1){
+				// if 1 user matches friend name, and has accepted request, then we can run query to show profile... new function maybe?
+			}
+			break;
+                   case 9: usermenu = false; break;
+                   default : System.out.println("Unrecognized choice!"); break;
+                }
+              }
+            }
       }catch(Exception e){
          System.err.println (e.getMessage ());
       } 
