@@ -276,7 +276,7 @@ public class ProfNetwork {
                 System.out.println("9. Log out");
                 switch (readChoice()){
                    case 1: FriendList(esql); break;
-                   case 2: UpdateProfile(esql); break;
+                   case 2: UpdateProfile(esql, authorisedUser); break;
                    case 3: NewMessage(esql); break;
                    case 4: SendRequest(esql); break;
                    case 5: ViewMessage(esql); break;
@@ -398,10 +398,8 @@ public class ProfNetwork {
     /*
     * Updating user's password
     */
-    public static void UpdateProfile(ProfNetwork esql){
+    public static void UpdateProfile(ProfNetwork esql, String login){
         try{
-         System.out.print("\tEnter user login: ");
-         String login = in.readLine();
          System.out.print("\tEnter new password: ");
          String newPassword = in.readLine();
          String query = String.format("UPDATE USR SET password = '%s' WHERE userId = '%s'", newPassword, login);
@@ -415,6 +413,7 @@ public class ProfNetwork {
          return;
       }
     }
+
 
     /*
     * Send message to anyone on network 
