@@ -17,7 +17,7 @@ COPY WORK_EXPR(
 	startDate,
 	endDate
 )
-FROM 'Work_Ex.CSV'
+FROM 'Work_Ex.csv'
 DELIMITER ',' CSV HEADER;
 
 
@@ -29,7 +29,7 @@ COPY EDUCATIONAL_DETAILS(
 	startDate,
 	endDate
 )
-FROM 'Edu_Det.CSV'
+FROM 'Edu_Det.csv'
 DELIMITER ',' CSV HEADER;
 
 
@@ -42,7 +42,7 @@ COPY MESSAGE(
 	deleteStatus,
 	status
 )
-FROM 'Message.CSV'
+FROM 'Message.csv'
 DELIMITER ',' CSV HEADER;
 
 
@@ -51,5 +51,5 @@ COPY CONNECTION_USR(
 	connectionId, 
 	status
 )
-FROM 'Connection.CSV'
+FROM 'Connection.csv'
 DELIMITER ',' CSV HEADER;
