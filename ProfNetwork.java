@@ -189,6 +189,8 @@ public class ProfNetwork {
        return rowCount;
    }
 
+
+
    /**
     * Method to fetch the last value from sequence. This
     * method issues the query to the DBMS and returns the current
@@ -328,8 +330,29 @@ public class ProfNetwork {
       }while (true);
       return input;
    }//end readChoice
+
+ /*
+ *     * Creates a new user with privided login, passowrd and phoneNum
+ *         * An empty block and contact list would be generated and associated with a user
+ *             **/
+   public static void CreateUser(ProfNetwork esql){
+      try{
+         System.out.print("\tEnter user login: ");
+         String login = in.readLine();
+         System.out.print("\tEnter user password: ");
+         String password = in.readLine();
+         System.out.print("\tEnter user email: ");
+         String email = in.readLine();
+	 //Creating empty contact\block lists for a user
+	 String query = String.format("INSERT INTO USR (userId, password, email) VALUES ('%s','%s','%s')", login, password, email);
+	 esql.executeUpdate(query);
+	 System.out.println ("User successfully created!");
+	 }catch(Exception e){
+	 	System.err.println (e.getMessage ());
+	 }
+    }//end
 	
-/*
+    /*
     * Check log in credentials for an existing user
     * @return User login or null is the user does not exist
     **/
@@ -355,33 +378,12 @@ public class ProfNetwork {
       }
    }//end
 
-   /*
-    * Check log in credentials for an existing user
-    * @return User login or null is the user does not exist
-    **/
-   public static String LogIn(ProfNetwork esql){
-      try{
-         System.out.print("\tEnter user login: ");
-         String login = in.readLine();
-         System.out.print("\tEnter user password: ");
-         String password = in.readLine();
-
-         String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
-         int userNum = esql.executeQuery(query);
-	 if (userNum > 0)
-		return login;
-         return null;
-      }catch(Exception e){
-         System.err.println (e.getMessage ());
-         return null;
-      }
-   }//end
 
 // Rest of the functions definition go in here
    /*
    * View friends and can access friends profile. Additionally you can send a connection request or a message to them 
    */
-    public static void FriendList(ProfNetwork esql, string authUse){
+    public static void FriendList(ProfNetwork esql, String authUse){
 	try{
 	// System.out.print("\tEnter user login: ");
         // String login = in.readLine();
@@ -396,11 +398,14 @@ public class ProfNetwork {
                 System.out.println("9. Go back");
                 switch (readChoice()){
                    case 1:
-			String query = String.format("SELECT C.connectionId FROM connection_usr C WHERE userId = '%s' AND status = 'Accept'", authUse);
-		        int userNum = esql.executeQuery(query);
-       			if (userNum <= 0){
+			String fListQ = String.format("SELECT C.connectionId AS Friends FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authUse, authUse);
+		        int fListNum = esql.executeQuery(fListQ);
+       			if (fListNum <= 0){
                			 System.out.print("No connections yet\n");
         		}
+			else{
+				esql.executeQueryAndPrintResult(fListQ);
+			}
 			break;
                    case 2:
 			System.out.print("\tEnter friend's username: ");
