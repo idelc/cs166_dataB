@@ -378,6 +378,41 @@ public class ProfNetwork {
       }
    }//end
 
+   public static void displayProf(ProfNetwork esql, String authUse, fName){
+      try{
+         String query = String.format("SELECT U.name, U.userId, U.email, U.dateOfBirth FROM USR U WHERE U.userId = '%s'", fName);
+         System.out.print("\n");
+	 esql.executeQueryAndPrintResult(query);
+	 System.out.print("\nWork Experience");
+	 query = String.format("SELECT W.company, W.role, W.location, W.startDate, W.endDate FROM WORK_EXPR W WHERE W.userId = '%s'", fName);
+	 esql.executeQueryAndPrintResult(query);
+	 System.out.print("\nEducation");
+         query = String.format("SELECT E.institutionName, E.major, E.degree, E.startDate, E.endDate FROM EDUCATIONAL_DETAILS E WHERE E.userId = '%s'", fName);
+         esql.executeQueryAndPrintResult(query);
+         return null;
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return null;
+      }
+   }//end
+
+
+    public static void dispFList(ProfNetwork esql, String authUse){
+	try{
+		String fListQ = String.format("SELECT C.connectionId AS Friends FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authUse, authUse);
+                int fListNum = esql.executeQuery(fListQ);
+                if (fListNum <= 0){
+			System.out.print("No connections yet\n");
+                }
+                else{
+                	esql.executeQueryAndPrintResult(fListQ);
+                }
+	
+	}catch(Exception e){
+         System.err.println (e.getMessage ());
+	}
+
+    }
 
 // Rest of the functions definition go in here
    /*
@@ -398,14 +433,7 @@ public class ProfNetwork {
                 System.out.println("9. Go back");
                 switch (readChoice()){
                    case 1:
-			String fListQ = String.format("SELECT C.connectionId AS Friends FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authUse, authUse);
-		        int fListNum = esql.executeQuery(fListQ);
-       			if (fListNum <= 0){
-               			 System.out.print("No connections yet\n");
-        		}
-			else{
-				esql.executeQueryAndPrintResult(fListQ);
-			}
+			dispFList(esql, authUse);
 			break;
                    case 2:
 			System.out.print("\tEnter friend's username: ");
