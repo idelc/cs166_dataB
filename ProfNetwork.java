@@ -269,19 +269,21 @@ public class ProfNetwork {
               while(usermenu) {
                 System.out.println("MAIN MENU");
                 System.out.println("---------");
-                System.out.println("1. Go to Friend List");
-                System.out.println("2. Update Profile");
-                System.out.println("3. Write a new message");
-                System.out.println("4. Send Friend Request");
-                System.out.println("5. View messages");
+		System.out.println("1. View Profile");
+                System.out.println("2. Go to Friend List");
+                System.out.println("3. Update Profile");
+                System.out.println("4. Write a new message");
+                System.out.println("5. Send Friend Request");
+                System.out.println("6. View messages");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
-                   case 1: FriendList(esql, authorisedUser); break;
-                   case 2: UpdateProfile(esql, authorisedUser); break;
-                   case 3: NewMessage(esql, authorisedUser); break;
-                   case 4: SendRequest(esql, authorisedUser); break;
-                   case 5: ViewMessage(esql, authorisedUser); break;
+                   case 1: displayProf	(esql, authorisedUser); break;
+		   case 2: FriendList	(esql, authorisedUser); break;
+                   case 3: UpdateProfile(esql, authorisedUser); break;
+                   case 4: NewMessage	(esql, authorisedUser); break;
+                   case 5: SendRequest	(esql, authorisedUser); break;
+                   case 6: ViewMessage	(esql, authorisedUser); break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
@@ -553,12 +555,19 @@ public class ProfNetwork {
     }
 
     /* Send request for connection  */
-    public static void SendRequest(ProfNetwork esql, String authU){
-
+    public static void SendRequest(ProfNetwork esql, String authU){ //TODO: input validation
+	System.out.print("\n\tWho would you like to send a request to?\n\t");
+        String conRec = in.readLine();
+	String query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, conRec);
+	esql.executeUpdate(query);
+	
+	System.out.print("Request Sent!\n");
     }
 
     public static void SendRequestTO(ProfNetwork esql, String authU, String recip){
-
+	String query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, recip);
+        esql.executeUpdate(query);
+        System.out.print("Request Sent!\n");
     }
 
 
