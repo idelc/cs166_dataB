@@ -378,45 +378,49 @@ public class ProfNetwork {
       }
    }//end
 
-   public static void lookFriendMenu(ProfNetwork esql, String authUse, int level, List<String> names){
+   public static void lookFriendMenu(ProfNetwork esql, String authUse, List<String> names){
       try{
 	System.out.print("\nType in the username of the person whose profile you want to see: ");
         String toLook = in.readLine();
-	names.add(level, toLook);
+	names.add(toLook);
 	int validFriend = 1;
-	for(int i = level; i >= 1; i--){
+	// String outputTesting = "";
+	for(int i = names.size()-1; i >= 1; i--){
+		// outputTesting = "Trying " + names.get(i-1) + " and " + names.get(i) + "\n";
+		//System.out.print(outputTesting);
 		String query = String.format("SELECT * FROM CONNECTION_USR C WHERE ((C.userId = '%s' AND C.connectionid = '%s') OR (C.userId = '%s' AND C.connectionid = '%s')) AND C.status = 'Accept'", names.get(i-1), names.get(i), names.get(i), names.get(i-1));
         	if(esql.executeQuery(query) != 1) 
 			validFriend = 0;
 	}
-        
+        //System.out.print("done checking\n");
         if (validFriend != 1){
 		System.out.print("Invalid input.\n");
 		names.remove(names.size() - 1);
 		return;
 	}
+	//System.out.print("friend menu time\n");
         boolean friendmenu = true;
         while(friendmenu) {
-		String out = names.get(level) + "'s Profile";
+		String out = names.get(names.size()-1) + "'s Profile";
         	System.out.println(out);
-		displayProf(esql, names.get(level));
+		displayProf(esql, names.get(names.size()-1));
 		// dispFList(esql, toLook);
                 System.out.println("\n---------");
-                out = "1. Write " + names.get(level) + " a new message";
+                out = "1. Write " + names.get(names.size()-1) + " a new message";
 		System.out.println(out);
-		out = "2. View " + names.get(level) + "'s friends list";
+		out = "2. View " + names.get(names.size()-1) + "'s friends list";
 		System.out.println(out);
-                if((level < 4) && (level > 1))
+                if((names.size() < 4) && (names.size()> 1))
 			System.out.println("3. Send Friend Request");
 		System.out.println("4. Look at one of their friends");
                 System.out.println(".........................");
                 System.out.println("9. Go Back");
                 switch (readChoice()){
-                   case 2: dispFList(esql, names.get(level)); break;
+                   case 2: dispFList(esql, names.get(names.size()-1)); break;
                    case 1: NewMessage(esql, authUse); break;
-                   case 3: SendRequestTO(esql, authUse, names.get(level)); break;
-		   case 4: lookFriendMenu(esql, authUse, level++, names); break; 
-                   case 9: friendmenu = false; break;
+                   case 3: SendRequestTO(esql, authUse, names.get(names.size()-1)); break;
+		   case 4: lookFriendMenu(esql, authUse, names); break; 
+                   case 9: names.remove(names.size() - 1); friendmenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
               }
@@ -489,7 +493,7 @@ public class ProfNetwork {
                    case 2:
 			List<String> names=new ArrayList<String>();
 			names.add(authUse);
-			lookFriendMenu(esql, authUse, 1, names);
+			lookFriendMenu(esql, authUse, names);
 			break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
