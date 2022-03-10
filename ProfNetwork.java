@@ -277,10 +277,10 @@ public class ProfNetwork {
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
-                   case 1: FriendList(esql, authorisedUser, 0); break;
+                   case 1: FriendList(esql, authorisedUser); break;
                    case 2: UpdateProfile(esql, authorisedUser); break;
                    case 3: NewMessage(esql, authorisedUser); break;
-                   case 4: SendRequest(esql, authorisedUser, 0); break;
+                   case 4: SendRequest(esql, authorisedUser); break;
                    case 5: ViewMessage(esql, authorisedUser); break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
@@ -397,12 +397,15 @@ public class ProfNetwork {
 	}
         boolean friendmenu = true;
         while(friendmenu) {
-        	System.out.println("%s's Profile", names[level]);
+		String out = names[level] + "'s Profile";
+        	System.out.println(out);
 		displayProf(esql, names[level]);
 		// dispFList(esql, toLook);
                 System.out.println("\n---------");
-                System.out.println("1. Write %s a new message", names[level]);
-		System.out.println("2. View %s's friend list", names[level]);
+                out = "1. Write " + names[level] + " a new message";
+		System.out.println(out);
+		out = "2. View " + names[level] + "'s friends list";
+		System.out.println(out);
                 if((level < 4) && (level > 1))
 			System.out.println("3. Send Friend Request");
 		System.out.println("4. Look at one of their friends");
@@ -411,20 +414,17 @@ public class ProfNetwork {
                 switch (readChoice()){
                    case 2: dispFList(esql, names[level]); break;
                    case 1: NewMessage(esql, authUse); break;
-                   case 3: SendRequest(esql, authUse, names[level]); break;
+                   case 3: SendRequestTO(esql, authUse, names[level]); break;
 		   case 4: lookFriendMenu(esql, authUse, level++, names); break; 
-                   case 9: usermenu = false; break;
+                   case 9: friendmenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
               }
-	 			
-	 }
-	 else{System.out.print("Invalid input.\n");}
 
-         return null;
+         return;
       }catch(Exception e){
          System.err.println (e.getMessage ());
-         return null;
+         return;
       }
    }//end
 
@@ -440,10 +440,10 @@ public class ProfNetwork {
 	 System.out.print("\nEducation");
          query = String.format("SELECT E.institutionName, E.major, E.degree, E.startDate, E.endDate FROM EDUCATIONAL_DETAILS E WHERE E.userId = '%s'", fName);
          esql.executeQueryAndPrintResult(query);
-         return null;
+         return;
       }catch(Exception e){
          System.err.println (e.getMessage ());
-         return null;
+         return;
       }
    }//end
 
@@ -489,7 +489,7 @@ public class ProfNetwork {
                    case 2:
 			String[] names;
 			names[0] = authUse;
-			lookFriendMenu(esql, String authUse, 1, names);
+			lookFriendMenu(esql, authUse, 1, names);
 			break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
@@ -549,9 +549,14 @@ public class ProfNetwork {
     }
 
     /* Send request for connection  */
-    public static void SendRequest(ProfNetwork esql, String authU, int level){
+    public static void SendRequest(ProfNetwork esql, String authU){
 
     }
+
+    public static void SendRequestTO(ProfNetwork esql, String authU, String recip){
+
+    }
+
 
     /* View user's messages and have the option to delete them*/
     public static void ViewMessage(ProfNetwork esql, String receiverId){
