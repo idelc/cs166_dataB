@@ -378,33 +378,33 @@ public class ProfNetwork {
       }
    }//end
 
-   public static void lookFriendMenu(ProfNetwork esql, String authUse, int level, String[] names){
+   public static void lookFriendMenu(ProfNetwork esql, String authUse, int level, List<String> names){
       try{
 	System.out.print("\nType in the username of the person whose profile you want to see: ");
         String toLook = in.readLine();
-	names[level] = toLook;
+	names.add(level, toLook);
 	int validFriend = 1;
 	for(int i = level; i >= 1; i--){
-		String query = String.format("SELECT * FROM CONNECTION_USR C WHERE ((C.userId = '%s' AND C.connectionid = '%s') OR (C.userId = '%s' AND C.connectionid = '%s')) AND C.status = 'Accept'", names[i-1], names[i], names[i], names[i-1]);
+		String query = String.format("SELECT * FROM CONNECTION_USR C WHERE ((C.userId = '%s' AND C.connectionid = '%s') OR (C.userId = '%s' AND C.connectionid = '%s')) AND C.status = 'Accept'", names.get(i-1), names.get(i), names.get(i), names.get(i-1));
         	if(esql.executeQuery(query) != 1) 
 			validFriend = 0;
 	}
         
         if (validFriend != 1){
 		System.out.print("Invalid input.\n");
-		names[level] = "";
+		names.remove(names.size() - 1);
 		return;
 	}
         boolean friendmenu = true;
         while(friendmenu) {
-		String out = names[level] + "'s Profile";
+		String out = names.get(level) + "'s Profile";
         	System.out.println(out);
-		displayProf(esql, names[level]);
+		displayProf(esql, names.get(level));
 		// dispFList(esql, toLook);
                 System.out.println("\n---------");
-                out = "1. Write " + names[level] + " a new message";
+                out = "1. Write " + names.get(level) + " a new message";
 		System.out.println(out);
-		out = "2. View " + names[level] + "'s friends list";
+		out = "2. View " + names.get(level) + "'s friends list";
 		System.out.println(out);
                 if((level < 4) && (level > 1))
 			System.out.println("3. Send Friend Request");
@@ -412,9 +412,9 @@ public class ProfNetwork {
                 System.out.println(".........................");
                 System.out.println("9. Go Back");
                 switch (readChoice()){
-                   case 2: dispFList(esql, names[level]); break;
+                   case 2: dispFList(esql, names.get(level)); break;
                    case 1: NewMessage(esql, authUse); break;
-                   case 3: SendRequestTO(esql, authUse, names[level]); break;
+                   case 3: SendRequestTO(esql, authUse, names.get(level)); break;
 		   case 4: lookFriendMenu(esql, authUse, level++, names); break; 
                    case 9: friendmenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
@@ -438,7 +438,7 @@ public class ProfNetwork {
 	 query = String.format("SELECT W.company, W.role, W.location, W.startDate, W.endDate FROM WORK_EXPR W WHERE W.userId = '%s'", fName);
 	 esql.executeQueryAndPrintResult(query);
 	 System.out.print("\nEducation");
-         query = String.format("SELECT E.institutionName, E.major, E.degree, E.startDate, E.endDate FROM EDUCATIONAL_DETAILS E WHERE E.userId = '%s'", fName);
+         query = String.format("SELECT E.instituitionName, E.major, E.degree, E.startDate, E.endDate FROM EDUCATIONAL_DETAILS E WHERE E.userId = '%s'", fName);
          esql.executeQueryAndPrintResult(query);
          return;
       }catch(Exception e){
@@ -487,8 +487,8 @@ public class ProfNetwork {
 			dispFList(esql, authUse);
 			break;
                    case 2:
-			String[] names;
-			names[0] = authUse;
+			List<String> names=new ArrayList<String>();
+			names.add(authUse);
 			lookFriendMenu(esql, authUse, 1, names);
 			break;
                    case 9: usermenu = false; break;
