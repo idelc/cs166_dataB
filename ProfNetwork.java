@@ -277,10 +277,10 @@ public class ProfNetwork {
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
-                   case 1: FriendList(esql, authorisedUser); break;
+                   case 1: FriendList(esql, authorisedUser, 1); break;
                    case 2: UpdateProfile(esql, authorisedUser); break;
                    case 3: NewMessage(esql, authorisedUser); break;
-                   case 4: SendRequest(esql); break;
+                   case 4: SendRequest(esql, authorisedUser, 1); break;
                    case 5: ViewMessage(esql, authorisedUser); break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
@@ -378,6 +378,40 @@ public class ProfNetwork {
       }
    }//end
 
+   public static void lookFriendMenu(ProfNetwork esql, String authUse, int level, String toLook){
+      try{
+         boolean friendmenu = true;
+         while(friendmenu) {
+         	System.out.println("%s's Profile", toLook);
+		displayProf(esql, String authUse, toLook);
+		// dispFList(esql, toLook);
+                System.out.println("\n---------");
+                System.out.println("1. Write %s a new message", toLook);
+		System.out.println("2. View %s's friend list", toLook);
+                if((level < 4) && (level > 1))
+			System.out.println("2. Send Friend Request");
+                System.out.println(".........................");
+                System.out.println("9. Go Back");
+                switch (readChoice()){
+                   case 1: dispFList(esql, toLook); break;
+                   case 1: NewMessage(esql, authorisedUser); break;
+                   case 2: SendRequest(esql, authorisedUser, 1); break;
+                   case 9: usermenu = false; break;
+                   default : System.out.println("Unrecognized choice!"); break;
+                }
+              }
+	 			
+	 }
+	 else{System.out.print("Invalid input.\n");}
+
+         return null;
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return null;
+      }
+   }//end
+
+
    public static void displayProf(ProfNetwork esql, String authUse, fName){
       try{
          String query = String.format("SELECT U.name, U.userId, U.email, U.dateOfBirth FROM USR U WHERE U.userId = '%s'", fName);
@@ -418,7 +452,7 @@ public class ProfNetwork {
    /*
    * View friends and can access friends profile. Additionally you can send a connection request or a message to them 
    */
-    public static void FriendList(ProfNetwork esql, String authUse){
+    public static void FriendList(ProfNetwork esql, String authUse, int level){
 	try{
 	// System.out.print("\tEnter user login: ");
         // String login = in.readLine();
@@ -436,13 +470,11 @@ public class ProfNetwork {
 			dispFList(esql, authUse);
 			break;
                    case 2:
-			System.out.print("\tEnter friend's username: ");
-        		String fUsr = in.readLine();
-       			String query = String.format("SELECT C.connectionId FROM connection_usr C WHERE connectionid = '%s' AND status = 'Accept'", fUsr);
-        		int userNum = esql.executeQuery(query);
-        		if (userNum == 1){
-				// if 1 user matches friend name, and has accepted request, then we can run query to show profile... new function maybe?
-			}
+			System.out.print("\nType in the username of the friend whose profile you want to see: ");
+         		String toLook = in.readLine();
+			String query = String.format("SELECT * FROM CONNECTION_USR C WHERE ((C.userId = '%s' AND C.connectionid = '%s') OR (C.userId = '%s' AND C.connectionid = '%s')) AND C.status = 'Accept'", authUse, toLook, toLook, authUse);
+        		int validFriend = esql.executeQuery(query);
+         		if (validFriend == 1){lookFriendMenu(esql, authUse, 1, toLook);} else{System.out.print("Invalid input.\n");}
 			break;
                    case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
@@ -502,7 +534,7 @@ public class ProfNetwork {
     }
 
     /* Send request for connection  */
-    public static void SendRequest(ProfNetwork esql){
+    public static void SendRequest(ProfNetwork esql, String authU, int level){
 
     }
 
