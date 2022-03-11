@@ -275,6 +275,7 @@ public class ProfNetwork {
                 System.out.println("4. Write a new message");
                 System.out.println("5. Request Dashboard");
                 System.out.println("6. View messages");
+		System.out.println("7. Search For People");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
@@ -284,7 +285,8 @@ public class ProfNetwork {
                    case 4: NewMessage	(esql, authorisedUser); break;
                    case 5: ReqDash	(esql, authorisedUser); break;
                    case 6: ViewMessage	(esql, authorisedUser); break;
-                   case 9: usermenu = false; break;
+                   case 7: srcPpl	(esql, authorisedUser); break;
+		   case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
               }
@@ -434,6 +436,23 @@ public class ProfNetwork {
       }
    }//end
 
+   public static void srcPpl(ProfNetwork esql, String authUse){
+	try{
+	  System.out.print("\nWho do you want to search for? ");
+	  String srcT= in.readLine();
+	  String query = String.format("SELECT * FROM USR WHERE '%s' IN (SELECT userId FROM USR)", srcT);
+          int validIn = esql.executeQuery(query);
+          if(validIn != 1){
+             System.out.print("\nUsername wrong or does not exist");
+             return;
+          }
+          displayProf(esql, srcT);
+	}catch(Exception e){
+          System.err.println (e.getMessage ());
+          return;
+	}
+
+   }
 
    public static void displayProf(ProfNetwork esql, String fName){
       try{
@@ -446,6 +465,7 @@ public class ProfNetwork {
 	 System.out.print("\nEducation");
          query = String.format("SELECT E.instituitionName, E.major, E.degree, E.startDate, E.endDate FROM EDUCATIONAL_DETAILS E WHERE E.userId = '%s'", fName);
          esql.executeQueryAndPrintResult(query);
+	 System.out.print("\n");
          return;
       }catch(Exception e){
          System.err.println (e.getMessage ());
@@ -559,7 +579,7 @@ public class ProfNetwork {
 	try{
 	System.out.print("\n\tWho would you like to send a request to?\n\t");
         String conRec = in.readLine();
-	String query = String.format("SELECT * FROM USR WHERE '%s' IN userId");
+	String query = String.format("SELECT * FROM USR WHERE '%s' IN userId", conRec);
         int validIn = esql.executeQuery(query);
 	if(validIn != 1){
 	   System.out.print("\nUsername wrong or does not exist");
@@ -577,7 +597,13 @@ public class ProfNetwork {
 
     public static void SendRequestTO(ProfNetwork esql, String authU, String recip){
       try{
-	String query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, recip);
+	String query = String.format("SELECT * FROM USR WHERE '%s' IN userId", recip);
+        int validIn = esql.executeQuery(query);
+        if(validIn != 1){
+           System.out.print("\nUsername wrong or does not exist");
+           return;
+        }
+	query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, recip);
         esql.executeUpdate(query);
         System.out.print("Request Sent!\n");
       }catch(Exception e){
@@ -590,13 +616,16 @@ public class ProfNetwork {
       try{
         boolean rD = true;
          while(rD) {
-            //These are sample SQL statements
             System.out.println("\nRequest Dashboard");
             System.out.println("---------");
             System.out.println("1. View Requests You Made");
             System.out.println("2. View Incoming Requests");
-	    System.out.println("3. Send Requests (limit 5 for new users)\n\t");
-            System.out.println("9. EXIT");
+	    	String queryV = String.format("SELECT * FROM USR WHERE userId = '%s' AND fCon > 0", authU);
+                int validR = esql.executeQuery(queryV);
+                if(validR == 1){
+	    	System.out.println("3. Send Requests (limit 5 non friends for new users)\n\t");
+            	}
+	    System.out.println("9. EXIT");
             switch (readChoice()){
                case 1: 
 		 String query1 = String.format("SELECT C.connectionId AS Recipient, C.status FROM CONNECTION_USR C WHERE C.userId = '%s'", authU);
@@ -609,7 +638,20 @@ public class ProfNetwork {
                  esql.executeQueryAndPrintResult(query2);
                  break;
                case 3: 
-                 // if the max request has not been sent, input val and then send 
+                 // if the max request has not been sent, input val and then send
+                 // Might be able to fix the implementation bellow, but for now...
+		 /*String query3 = String.format("SELECT * FROM USR WHERE userId = '%s' AND fCon > 0", authU);
+		 int validAsk = esql.executeQuery(query);
+        	 if(validAsk != 1){
+           	    System.out.print("\n\tWho would you like to send a request to?\n\t");
+        	    String conRec = in.readLine();
+		    query3 = String.format("SELECT C.connectionId into tempFriends FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'");
+		    query3 = String.format("SELECT C.userId FROM CONNECTION_USR C WHERE C.userId IN (SELECT C.userId FROM CONNECTION_USR C WHERE )", authU);
+                    int validIn = esql.executeQuery(query);
+
+                    return;
+                 }*/
+		 
 		 SendRequest(esql, authU);
                  break;
                case 9: rD = false; break;

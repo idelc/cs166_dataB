@@ -11,6 +11,7 @@ CREATE TABLE USR(
         email text NOT NULL,
         name char(50),
         dateOfBirth date,
+	fCon integer,
         Primary Key(userId));
 
 

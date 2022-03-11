@@ -16,4 +16,21 @@ LANGUAGE plpgsql VOLATILE;
 
 CREATE TRIGGER newMessage BEFORE INSERT
 ON Message FOR EACH ROW
-EXECUTE PROCEDURE func_name();                                 
+EXECUTE PROCEDURE func_name();
+
+CREATE OR REPLACE FUNCTION initCon()
+RETURNS "trigger" AS
+$BODY$
+BEGIN
+NEW.fCon = 5;
+
+RETURN NEW;
+
+END;
+$BODY$
+LANGUAGE plpgsql VOLATILE;
+
+CREATE TRIGGER newUsr BEFORE INSERT
+ON USR FOR EACH ROW
+EXECUTE PROCEDURE initCon();
+                                 
