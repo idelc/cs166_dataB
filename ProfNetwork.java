@@ -651,7 +651,7 @@ public class ProfNetwork {
 
                     return;
                  }*/
-		 
+		 String query3 = String.format("UPDATE USR  SET fCon = fCon - 1 WHERE userId = '%s'", authU); 
 		 SendRequest(esql, authU);
                  break;
                case 9: rD = false; break;
