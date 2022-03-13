@@ -507,26 +507,142 @@ public class ProfNetwork {
       } 
     }
 
-    /*
+      /*
     * Updating user's password
     */
     public static void UpdateProfile(ProfNetwork esql, String login){
         try{
-         System.out.print("\tEnter new password: ");
-         String newPassword = in.readLine();
-         String query = String.format("UPDATE USR SET password = '%s' WHERE userId = '%s'", newPassword, login);
-         int userNum = esql.executeQuery(query);
-         if (userNum > 0)
-                System.out.print("\tPassword failed to change! ");
-                //return login; // THIS NEEDS TO CHANGE
-         return;
-        }catch(Exception e){
+           boolean usermenu = true;
+           String query;
+           while(usermenu) {
+              System.out.println("1. Update password ");
+              System.out.println("2. Update full name ");
+              System.out.println("3. Update work experiences ");
+              System.out.println("4. Update educational experiences ");
+              System.out.println("9. EXIT");
+              switch (readChoice()) {
+                 case 1:
+                    System.out.print("\tEnter new password: ");
+                    String newPassword = in.readLine();
+                    query = String.format("UPDATE USR SET password = '%s' WHERE userId = '%s'", newPassword, login);
+                    esql.executeUpdate(query);
+                    break;
+                 case 2:
+                    System.out.print("\tEnter new full name: ");
+                    String newFullName = in.readLine();
+                    query = String.format("UPDATE USR SET name = '%s' WHERE userId = '%s'", newFullName, login);
+                    esql.executeUpdate(query);
+                    break;
+                 case 3:
+                    System.out.println("1. Update company ");
+                    System.out.println("2. Update role ");
+                    System.out.println("3. Update location ");
+                    System.out.println("4. Update start date ");
+                    System.out.println("5. Update end date ");
+                    System.out.println("9. EXIT");
+                    switch (readChoice()) {
+                       case 1:
+                          System.out.print("\tEnter new company: ");
+                          String newCompany = in.readLine();
+                          query = String.format("UPDATE WORK_EXPR SET company = '%s' WHERE userId = '%s'", newCompany, login);
+                          esql.executeUpdate(query);
+                          break;
+                       case 2:
+                          System.out.print("\tEnter new role: ");
+                          String newRole = in.readLine();
+                          query = String.format("UPDATE WORK_EXPR SET role = '%s' WHERE userId = '%s'", newRole, login);
+                          esql.executeUpdate(query);
+                          break;
+                       case 3:
+                          System.out.print("\tEnter new work location: ");
+                          String newLocation = in.readLine();
+                          query = String.format("UPDATE WORK_EXPR SET location = '%s' WHERE userId = '%s'", newLocation, login);
+                          esql.executeUpdate(query);
+                          break;
+                       case 4:
+                          System.out.print("\tEnter new start date(year-month-date): ");
+                          String newWorkStartDate = in.readLine();
+                          query = String.format("UPDATE WORK_EXPR SET startDate = '%s' WHERE userId = '%s'", newWorkStartDate, login);
+                          esql.executeUpdate(query);
+                          break;
+                       case 5:
+                          System.out.print("\tEnter new end date(year-month-date): ");
+                          String newWorkEndDate = in.readLine();
+                          query = String.format("UPDATE WORK_EXPR SET endDate = '%s' WHERE userId = '%s'", newWorkEndDate, login);
+                          esql.executeUpdate(query);
+                          break;
+                       case 9:
+                          break;
+                    }
+                    break;
+                 case 4:
+                    System.out.print("\tEnter current major: ");
+                    String currentMajor = in.readLine();
+                    System.out.print("\tEnter current degree: ");
+                    String currentDegree = in.readLine();
+
+                    boolean usermenu1 = true;
+                    while(usermenu1) {
+                       System.out.println("1. Update institution ");
+                       System.out.println("2. Update major ");
+                       System.out.println("3. Update degree ");
+                       System.out.println("4. Update start date ");
+                       System.out.println("5. Update end date ");
+                       System.out.println("9. EXIT");
+                       switch (readChoice()) {
+                          case 1:
+                             System.out.print("\tEnter new institution: ");
+                             String newInstitution = in.readLine();
+                             query = String.format("UPDATE EDUCATIONAL_DETAILS SET instituitionname = '%s' WHERE userId = '%s' AND major = '%s' AND degree = '%s'", newInstitution, login, currentMajor, currentDegree);
+                             esql.executeUpdate(query);
+                             break;
+                          case 2:
+                             System.out.print("\tEnter new major: ");
+                             String newMajor = in.readLine();
+                             query = String.format("UPDATE EDUCATIONAL_DETAILS SET major = '%s' WHERE userId = '%s' AND major = '%s' AND degree = '%s'", newMajor, login, currentMajor, currentDegree);
+                             esql.executeUpdate(query);
+                             currentMajor = newMajor;
+                             break;
+                          case 3:
+                             System.out.print("\tEnter new degree: ");
+                             String newDegree = in.readLine();
+                             query = String.format("UPDATE EDUCATIONAL_DETAILS SET degree = '%s' WHERE userId = '%s' AND major = '%s' AND degree = '%s'", newDegree, login, currentMajor, currentDegree);
+                             esql.executeUpdate(query);
+                             currentDegree = newDegree;
+                             break;
+                          case 4:
+                             System.out.print("\tEnter new start date(year-month-date): ");
+                             String newEduStartDate = in.readLine();
+                             query = String.format("UPDATE EDUCATIONAL_DETAILS SET startDate = '%s' WHERE userId = '%s' AND major = '%s' AND degree = '%s'", newEduStartDate, login, currentMajor, currentDegree);
+                             esql.executeUpdate(query);
+                             break;
+                          case 5:
+                             System.out.print("\tEnter new end date(year-month-date): ");
+                             String newEduEndDate = in.readLine();
+                             query = String.format("UPDATE EDUCATIONAL_DETAILS SET endDate = '%s' WHERE userId = '%s' AND major = '%s' AND degree = '%s'", newEduEndDate, login, currentMajor, currentDegree);
+                             esql.executeUpdate(query);
+                             break;
+                          case 9:
+                             usermenu1 = false;
+                             break;
+                       }
+
+                    }
+                    break;
+                 case 9:
+                    usermenu = false;
+                    break;
+                 default : System.out.println("Unrecognized choice!"); break;
+             }
+          }
+          return;
+      }catch(Exception e){
          System.err.println (e.getMessage ());
          return;
       }
     }
 
-
+	
     /*
     * Send message to anyone on network 
     */
