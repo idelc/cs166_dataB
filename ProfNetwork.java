@@ -440,7 +440,7 @@ public class ProfNetwork {
 	try{
 	  System.out.print("\nWho do you want to search for? ");
 	  String srcT= in.readLine();
-	  String query = String.format("SELECT * FROM USR WHERE '%s' IN (SELECT userId FROM USR)", srcT);
+	  String query = String.format("SELECT * FROM USR WHERE userId LIKE %'%s'%", srcT);
           int validIn = esql.executeQuery(query);
           if(validIn != 1){
              System.out.print("\nUsername wrong or does not exist");
