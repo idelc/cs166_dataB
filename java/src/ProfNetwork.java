@@ -387,9 +387,9 @@ public class ProfNetwork {
       try{
          List<List<String>> friends  = new ArrayList<List<String>>();
          String query= String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authU, authU);
-         firstLevel = esql.executeQueryAndReturnResult(query);
+         friends = esql.executeQueryAndReturnResult(query);
          String temp = "";
-         Iterator<List<String>> listIt = firstLevel.iterator();
+         Iterator<List<String>> listIt = friends.iterator();
          while(listIt.hasNext()){
             if(listIt.next().get(0).equals(nCheck)){
 	       return true;
@@ -398,7 +398,7 @@ public class ProfNetwork {
 	 return false;  
       }catch(Exception e){
          System.err.println (e.getMessage ());
-         return null;
+         return false;
       }
    }
 
@@ -423,9 +423,9 @@ public class ProfNetwork {
 		return;
 	}
 	if(isFriend(esql, authUse, toLook) == true){ // if travel from non-friend to a friend, reset connection level
-	 names.clear();
-	 names.add(authUse);
-	 names.add(toLook);
+	   names.clear();
+	   names.add(authUse);
+	   names.add(toLook);
 	}
 	//System.out.print("friend menu time\n");
         boolean friendmenu = true;
