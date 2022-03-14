@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
+import java.util.Iterator;
 import java.util.ArrayList;
 
 /**
@@ -275,6 +276,7 @@ public class ProfNetwork {
                 System.out.println("4. Write a new message");
                 System.out.println("5. Request Dashboard");
                 System.out.println("6. View messages");
+		System.out.println("7. Search For People");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
@@ -284,7 +286,8 @@ public class ProfNetwork {
                    case 4: NewMessage	(esql, authorisedUser); break;
                    case 5: ReqDash	(esql, authorisedUser); break;
                    case 6: ViewMessage	(esql, authorisedUser); break;
-                   case 9: usermenu = false; break;
+                   case 7: srcPpl	(esql, authorisedUser); break;
+		   case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
               }
@@ -434,6 +437,51 @@ public class ProfNetwork {
       }
    }//end
 
+   public static void srcPpl(ProfNetwork esql, String authUse){
+	try{
+	  boolean srchmenu = true;
+             while(srchmenu) {
+                System.out.println("SEARCH");
+                System.out.println("---------");
+                System.out.println("1. Search By Name");
+                System.out.println("2. View Profile of Person");
+                System.out.println(".........................");
+                System.out.println("9. Go back");
+                switch (readChoice()){
+                   case 1:
+                        System.out.print("\nWho do you want to search for? ");
+          		String srcT= in.readLine();
+          		String query = String.format("SELECT userId as Username, name as Name FROM USR WHERE (userId LIKE '%%");
+          		query = query + srcT + "%%') OR (name LIKE '%%" + srcT + "%%')";
+          		// System.out.print(query);
+          		int validIn = esql.executeQuery(query);
+          	        if(validIn < 1){
+                           System.out.print("\nCould not find anyone with that username or name");
+                           break;
+                        }
+                        esql.executeQueryAndPrintResult(query);
+                        break;
+                   case 2:
+			System.out.print("\nEnter the username of the person whose profile you want to view\n\n\t ");
+                        String srcTar= in.readLine();
+			System.out.print("\n");
+                        String query2 = String.format("SELECT* FROM USR WHERE userId = '%s'", srcTar);
+			int validIn2 = esql.executeQuery(query2);
+                        if(validIn2 != 1){                           
+                           System.out.print("\nCould not find anyone with that username or name");
+                           break;
+                        }
+                        displayProf(esql, srcTar);
+                        break;
+                   case 9: srchmenu = false; break;
+                   default : System.out.println("Unrecognized choice!"); break;
+                }
+              }
+	}catch(Exception e){
+          System.err.println (e.getMessage ());
+          return;
+	}
+   }
 
    public static void displayProf(ProfNetwork esql, String fName){
       try{
@@ -446,6 +494,7 @@ public class ProfNetwork {
 	 System.out.print("\nEducation");
          query = String.format("SELECT E.instituitionName, E.major, E.degree, E.startDate, E.endDate FROM EDUCATIONAL_DETAILS E WHERE E.userId = '%s'", fName);
          esql.executeQueryAndPrintResult(query);
+	 System.out.print("\n");
          return;
       }catch(Exception e){
          System.err.println (e.getMessage ());
@@ -559,13 +608,26 @@ public class ProfNetwork {
 	try{
 	System.out.print("\n\tWho would you like to send a request to?\n\t");
         String conRec = in.readLine();
-	String query = String.format("SELECT * FROM USR WHERE '%s' IN userId");
+	String query = String.format("SELECT * FROM USR WHERE userId = '%s'", conRec);
         int validIn = esql.executeQuery(query);
 	if(validIn != 1){
 	   System.out.print("\nUsername wrong or does not exist");
 	   return;
 	}
-	query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, conRec);
+	List<List<String>> firstLevel  = new ArrayList<List<String>>();
+        query= String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND (C.status = 'Accept' OR C.status = 'Request') UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND (C.status = 'Accept' OR C.status = 'Request')", authU, authU);
+        // System.out.print("\ngetting list 1");
+        firstLevel = esql.executeQueryAndReturnResult(query);
+        Iterator<List<String>> listIt = firstLevel.iterator();
+        while(listIt.hasNext()){
+	   String debug = "Comparing " + listIt.next().get(0) + " and " + conRec;
+	   System.out.println(debug);
+	   if(listIt.next().get(0).equals(conRec)== true){
+	      System.out.println("User is already a friend"); 
+	      return;
+	   }
+	}
+        query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, conRec);
 	esql.executeUpdate(query);
 	
 	System.out.print("Request Sent!\n");
@@ -577,7 +639,24 @@ public class ProfNetwork {
 
     public static void SendRequestTO(ProfNetwork esql, String authU, String recip){
       try{
-	String query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, recip);
+	String query = String.format("SELECT * FROM USR WHERE userId = '%s'", recip);
+        int validIn = esql.executeQuery(query);
+        if(validIn != 1){
+           System.out.print("\nUsername wrong or does not exist");
+           return;
+        }
+	List<List<String>> firstLevel  = new ArrayList<List<String>>();
+        query= String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND (C.status = 'Accept' OR C.status = 'Request') UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND (C.status = 'Accept' OR C.status = 'Request')", authU, authU);
+	firstLevel = esql.executeQueryAndReturnResult(query);
+        Iterator<List<String>> listIt = firstLevel.iterator();
+        while(listIt.hasNext()){
+           if(listIt.next().get(0).equals(recip)== true){
+	      System.out.println("User is already a friend"); 
+	      return;
+	   }
+        }
+
+	query = String.format("INSERT INTO CONNECTION_USR (userId, connectionId, status) VALUES ('%s', '%s', 'Request')", authU, recip);
         esql.executeUpdate(query);
         System.out.print("Request Sent!\n");
       }catch(Exception e){
@@ -590,13 +669,12 @@ public class ProfNetwork {
       try{
         boolean rD = true;
          while(rD) {
-            //These are sample SQL statements
             System.out.println("\nRequest Dashboard");
             System.out.println("---------");
             System.out.println("1. View Requests You Made");
-            System.out.println("2. View Incoming Requests");
-	    System.out.println("3. Send Requests (limit 5 for new users)\n\t");
-            System.out.println("9. EXIT");
+            System.out.println("2. View Incoming Requests");    
+	    System.out.println("3. Send Requests (limit 5 non friends for new users)\n\t");
+	    System.out.println("9. Go Back");
             switch (readChoice()){
                case 1: 
 		 String query1 = String.format("SELECT C.connectionId AS Recipient, C.status FROM CONNECTION_USR C WHERE C.userId = '%s'", authU);
@@ -607,10 +685,67 @@ public class ProfNetwork {
                  String query2 = String.format("SELECT C.userId AS Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request'", authU);
                  System.out.print("\n");
                  esql.executeQueryAndPrintResult(query2);
+		 acceptRequest(esql, authU);
                  break;
                case 3: 
-                 // if the max request has not been sent, input val and then send 
-		 SendRequest(esql, authU);
+                 // if the max request has not been sent, input val and then send
+                 // Might be able to fix the implementation bellow, but for now...
+		 System.out.println("\nNew users can send up to 5 requests\nAll users can request to connect with 2nd and 3rd level connections. Consider doing this from your friendlist! \n\tWho would you like to send a request to?\t");
+        	 // test: connection target exist?
+		 String conRec = in.readLine();
+        	 String query3 = String.format("SELECT * FROM USR U WHERE U.userId = '%s'", conRec);
+        	 int validIn3 = esql.executeQuery(query3);
+		 if(validIn3 != 1){
+           	    System.out.println("Username wrong or does not exist\n");
+                    break;
+		 }
+		 // test: can the user make the connection without friendship level?
+		 String queryV = String.format("SELECT * FROM USR U WHERE U.userId = '%s' AND U.fCon > 0", authU);
+                 int validR = esql.executeQuery(queryV); 
+		 if(validR != 1){
+                    List<List<String>> firstLevel  = new ArrayList<List<String>>();
+                    List<List<String>> secondLevel = new ArrayList<List<String>>();
+                    List<List<String>> thirdLevel  = new ArrayList<List<String>>();
+                    query3= String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authU, authU);
+                    // System.out.print("\ngetting list 1");
+		    firstLevel = esql.executeQueryAndReturnResult(query3);
+                    String temp = "";
+                    Iterator<List<String>> listIt = firstLevel.iterator();
+                    // System.out.print("\nmaking list of second connections");
+		    while(listIt.hasNext()){
+                       temp = listIt.next().get(0);
+                       query3 = String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", temp, temp);
+                       secondLevel.addAll(esql.executeQueryAndReturnResult(query3));
+                    }
+                    Iterator<List<String>> listIt2 = secondLevel.iterator();
+                    // System.out.print("\nmaking list of third connections");
+		    while(listIt2.hasNext()){
+                       temp = listIt2.next().get(0);
+                       query3 = String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", temp, temp);
+                       thirdLevel.addAll(esql.executeQueryAndReturnResult(query3));
+                    }
+                    thirdLevel.addAll(secondLevel);
+                    Iterator<List<String>> listIt3 = thirdLevel.iterator();
+		    boolean isFriend = false;
+		    String debug = "";
+		    // System.out.println("\n Is the recip a friend?");
+		    while (listIt3.hasNext()){
+		       //debug = "Testing " + listIt3.next().get(0) + " == " + conRec; 
+		       //System.out.println(debug);
+		       if(listIt3.next().get(0).equals(conRec)== true){
+                          // System.out.println("\nRecip is friend!");
+			  SendRequestTO(esql, authU, conRec);
+			  isFriend = true;
+			  break;
+                       }
+		    }
+		    if(isFriend == false){System.out.println("Sorry, this person is not a 2nd or 3rd connection\n");}
+                 }
+		 else {
+		   SendRequestTO(esql, authU, conRec);
+		   query3 = String.format("UPDATE USR SET fCon = fCon - 1 WHERE userId = '%s'", authU);
+		   esql.executeUpdate(query3);
+		 }
                  break;
                case 9: rD = false; break;
                default : System.out.println("Unrecognized choice!"); break;
@@ -669,6 +804,54 @@ public class ProfNetwork {
          return;
       }
     }
+
+   public static void acceptRequest(ProfNetwork esql, String authU){
+      try{
+         boolean AC = true;
+         while(AC) {
+            System.out.println("1. Accept Request");
+	    System.out.println("2. Decline Request");
+	    System.out.println("3. Go back");
+            switch (readChoice()){
+	       case 1:
+	       System.out.print("Whose request? ");
+	       String aFrom = in.readLine();
+               String queryY = String.format("SELECT C.userId FROM connection_usr C WHERE C.userId = '%s' AND C.userId IN (SELECT C.userId Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request')", aFrom, authU);
+               int validInY = esql.executeQuery(queryY);
+               if(validInY == 1){
+                  queryY = String.format("UPDATE connection_usr SET status = 'Accept' WHERE connectionId = '%s' and userId = '%s'", authU, aFrom);
+                  esql.executeUpdate(queryY);
+		  break;
+               }else{
+                  System.out.println("Username wrong or does not exist\n");
+	       }
+	       break;
+	       case 2:
+               System.out.print("Whose request? ");
+               String rFrom = in.readLine();
+               String queryR = String.format("SELECT C.userId FROM connection_usr C WHERE C.userId = '%s' AND C.userId IN (SELECT C.userId Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request')", rFrom, authU);
+               int validInR = esql.executeQuery(queryR);
+               if(validInR == 1){
+                  queryR = String.format("UPDATE connection_usr SET status = 'Reject' WHERE connectionId = '%s' and userId = '%s'", authU, rFrom);
+                  esql.executeUpdate(queryR);
+		  break;
+               }else{
+                  System.out.println("Username wrong or does not exist\n");
+               }
+               break;
+	       case 3:
+                  AC = false;
+                  break;
+	       default: System.out.println("\nInvalid Choice!");
+	    }
+	}
+
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return;
+      }
+   }
+   
 
 }//end ProfNetwork
 
