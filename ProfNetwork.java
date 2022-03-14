@@ -674,7 +674,7 @@ public class ProfNetwork {
             System.out.println("1. View Requests You Made");
             System.out.println("2. View Incoming Requests");    
 	    System.out.println("3. Send Requests (limit 5 non friends for new users)\n\t");
-	    System.out.println("9. EXIT");
+	    System.out.println("9. Go Back");
             switch (readChoice()){
                case 1: 
 		 String query1 = String.format("SELECT C.connectionId AS Recipient, C.status FROM CONNECTION_USR C WHERE C.userId = '%s'", authU);
@@ -685,6 +685,7 @@ public class ProfNetwork {
                  String query2 = String.format("SELECT C.userId AS Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request'", authU);
                  System.out.print("\n");
                  esql.executeQueryAndPrintResult(query2);
+		 acceptRequest(esql, authU);
                  break;
                case 3: 
                  // if the max request has not been sent, input val and then send
@@ -803,6 +804,54 @@ public class ProfNetwork {
          return;
       }
     }
+
+   public static void acceptRequest(ProfNetwork esql, String authU){
+      try{
+         boolean AC = true;
+         while(AC) {
+            System.out.println("1. Accept Request");
+	    System.out.println("2. Decline Request");
+	    System.out.println("3. Go back");
+            switch (readChoice()){
+	       case 1:
+	       System.out.print("Whose request? ");
+	       String aFrom = in.readLine();
+               String queryY = String.format("SELECT C.userId FROM connection_usr C WHERE C.userId = '%s' AND C.userId IN (SELECT C.userId Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request')", aFrom, authU);
+               int validInY = esql.executeQuery(queryY);
+               if(validInY == 1){
+                  queryY = String.format("UPDATE connection_usr SET status = 'Accept' WHERE connectionId = '%s' and userId = '%s'", authU, aFrom);
+                  esql.executeUpdate(queryY);
+		  break;
+               }else{
+                  System.out.println("Username wrong or does not exist\n");
+	       }
+	       break;
+	       case 2:
+               System.out.print("Whose request? ");
+               String rFrom = in.readLine();
+               String queryR = String.format("SELECT C.userId FROM connection_usr C WHERE C.userId = '%s' AND C.userId IN (SELECT C.userId Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request')", rFrom, authU);
+               int validInR = esql.executeQuery(queryR);
+               if(validInR == 1){
+                  queryR = String.format("UPDATE connection_usr SET status = 'Reject' WHERE connectionId = '%s' and userId = '%s'", authU, rFrom);
+                  esql.executeUpdate(queryR);
+		  break;
+               }else{
+                  System.out.println("Username wrong or does not exist\n");
+               }
+               break;
+	       case 3:
+                  AC = false;
+                  break;
+	       default: System.out.println("\nInvalid Choice!");
+	    }
+	}
+
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return;
+      }
+   }
+   
 
 }//end ProfNetwork
 
