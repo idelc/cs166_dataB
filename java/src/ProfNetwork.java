@@ -383,6 +383,25 @@ public class ProfNetwork {
       }
    }//end
 
+   public static boolean isFriend(ProfNetwork esql, String authU, String nCheck){ //checks if name is friend list
+      try{
+         List<List<String>> friends  = new ArrayList<List<String>>();
+         String query= String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authU, authU);
+         firstLevel = esql.executeQueryAndReturnResult(query);
+         String temp = "";
+         Iterator<List<String>> listIt = firstLevel.iterator();
+         while(listIt.hasNext()){
+            if(listIt.next().get(0).equals(nCheck)){
+	       return true;
+	    }
+         }
+	 return false;  
+      }catch(Exception e){
+         System.err.println (e.getMessage ());
+         return null;
+      }
+   }
+
    public static void lookFriendMenu(ProfNetwork esql, String authUse, List<String> names){
       try{
 	System.out.print("\nType in the username of the person whose profile you want to see: ");
@@ -402,6 +421,11 @@ public class ProfNetwork {
 		System.out.print("Invalid input.\n");
 		names.remove(names.size() - 1);
 		return;
+	}
+	if(isFriend(esql, authUse, toLook) == true){ // if travel from non-friend to a friend, reset connection level
+	 names.clear();
+	 names.add(authUse);
+	 names.add(toLook);
 	}
 	//System.out.print("friend menu time\n");
         boolean friendmenu = true;
