@@ -592,7 +592,8 @@ public class ProfNetwork {
               System.out.println("2. Update full name ");
               System.out.println("3. Update work experiences ");
               System.out.println("4. Update educational experiences ");
-              System.out.println("9. EXIT");
+              System.out.println(".........................");
+	      System.out.println("9. EXIT");
               switch (readChoice()) {
                  case 1:
                     System.out.print("\tEnter new password: ");
@@ -698,7 +699,8 @@ public class ProfNetwork {
                           System.out.println("3. Update degree ");
                           System.out.println("4. Update start date ");
                           System.out.println("5. Update end date ");
-                          System.out.println("9. EXIT");
+                          System.out.println(".........................");
+			  System.out.println("9. EXIT");
                           switch (readChoice()) {
                              case 1:
                                 System.out.print("\tEnter new institution: ");
@@ -779,7 +781,7 @@ public class ProfNetwork {
             System.out.print("\tEnter draft message you want to send to receiver: ");
             String contents = in.readLine();
 
-            String query = String.format("INSERT INTO MESSAGE (senderId, receiverId, contents, status) VALUES ('%s','%s','%s', '%s')", senderId, receiverId, contents, "Draft");
+            String query = String.format("INSERT INTO MESSAGE (senderId, receiverId, contents, deleteStatus, status) VALUES ('%s','%s','%s', 0,'%s')", senderId, receiverId, contents, "Draft");
             esql.executeUpdate(query);
 
             System.out.print("\tDo you want to send the message you drafted(Y/N)? ");
@@ -867,7 +869,8 @@ public class ProfNetwork {
             System.out.println("1. View Requests You Made");
             System.out.println("2. View Incoming Requests");    
 	    System.out.println("3. Send Requests (limit 5 non friends for new users)\n\t");
-	    System.out.println("9. Go Back");
+	    System.out.println(".........................");
+	    System.out.println("9. Go Back\n");
             switch (readChoice()){
                case 1: 
 		 String query1 = String.format("SELECT C.connectionId AS Recipient, C.status FROM CONNECTION_USR C WHERE C.userId = '%s'", authU);
@@ -953,30 +956,37 @@ public class ProfNetwork {
 
 
     /* View user's messages and have the option to delete them*/
-    public static void ViewMessage(ProfNetwork esql, String receiverId){
+    public static void ViewMessage(ProfNetwork esql, String authU){ //deleteStatus 3=both, 2 = receiverDeleted, 1 = senderDeleted, 0 = neitherDeleted
         try{
-            String query = String.format("UPDATE MESSAGE SET status = 'Delivered' WHERE status <> 'Read' AND receiverId = '%s'", receiverId);
-            esql.executeUpdate(query);
-
-            query = String.format("SELECT * FROM MESSAGE M WHERE M.receiverId = '%s'", receiverId);
-            int userNum = esql.executeQueryAndPrintResult(query);
-            System.out.print("\tDo you want to mark a message as read(Y/N)? ");
-            String contents = in.readLine();
-            if(contents.equals("Y")) {
-               System.out.print("\tEnter msgId to be marked as read: ");
-               String msgId = in.readLine();
-               query = String.format("UPDATE MESSAGE SET status = 'Read' WHERE receiverId = '%s' AND msgId='%s'", receiverId, msgId);
-               esql.executeUpdate(query);
-            }
-            if (userNum <= 0){
-                System.out.print("\tYou have no messages!\n");
-            }
-            System.out.println("1. Delete a specific message from a user to Friend List");
-            System.out.println("2. Go back");
-            switch (readChoice()){
-               case 1: DeleteMessage(esql, receiverId); break;
-               case 2: break;
-            }
+            boolean messMenu = true;
+            while(messMenu){
+               System.out.println("1. Sent Messages");
+               System.out.println("2. Receieved Messages");
+               System.out.println("3. New Message");
+	       System.out.println(".........................");
+	       System.out.println("9. Go Back");
+               switch (readChoice()){
+                  case 1:
+                     String query1 = String.format("SELECT msgId, receiverId AS Recipient, sendTime AS Time, contents FROM message WHERE senderId = '%s' AND deleteStatus IN (0,2)", authU);
+                     if(esql.executeQueryAndPrintResult(query1) == 0) {System.out.println("No sent messages"); break;}
+                     System.out.println();
+		     DeleteMessage(esql, authU, true);
+                     break;
+                  case 2:
+                     String query2 = String.format("UPDATE MESSAGE SET status = 'Delivered' WHERE status <> 'Read' AND receiverId = '%s' AND deleteStatus IN (1,0)", authU);
+		     esql.executeUpdate(query2);
+                     query2 = String.format("SELECT msgId, senderId AS Sender, sendTime AS Time, contents FROM message WHERE receiverId = '%s' AND deleteStatus IN (0,1)", authU);
+                     if(esql.executeQueryAndPrintResult(query2) == 0) {System.out.println("No new messages"); break;}
+                     System.out.println();
+		     DeleteMessage(esql,authU, false);
+		     break;
+                  case 3: 
+		     NewMessage(esql, authU);
+		     break;		     
+                  case 9: return;
+                  default : System.out.println("Unrecognized choice!"); break;
+               }
+           }   
         }catch(Exception e){
          System.err.println (e.getMessage ());
          return;
@@ -984,14 +994,64 @@ public class ProfNetwork {
     }
 
     /* Delete a message */
-    public static void DeleteMessage(ProfNetwork esql, String userId){
+    public static void DeleteMessage(ProfNetwork esql, String userId, boolean sender){ //deleteStatus 3=bothDel, 2 = receiverDel, 1 = senderDel, 0 = neitherDel
         try{
-            System.out.print("\tEnter msgId you want to delete: ");
-            String msgId = in.readLine();
-            String query = String.format("DELETE FROM MESSAGE WHERE receiverId = '%s' AND msgID = '%s'", userId, msgId);
-            esql.executeUpdate(query);
-            System.out.print("\tMessage has been deleted! ");
-            return;
+	   while(true){
+	      System.out.println("Do you want to delete a message?");
+	      System.out.println("1. Yes");
+	      System.out.println("2. No");
+	      switch(readChoice()){
+	         case 1: 
+                    System.out.print("\tEnter msgId you want to delete: ");
+                    String msgId = in.readLine();
+		    String query = String.format("SELECT deleteStatus FROM MESSAGE WHERE msgId = %s", msgId);
+                    List<List<String>> delStat = new ArrayList<List<String>>(esql.executeQueryAndReturnResult(query));
+		    // maybe some input val here for "not your message
+		    if(sender){
+		       switch(Integer.parseInt(delStat.get(0).get(0))){
+		          case 0:
+			     query = String.format("UPDATE MESSAGE SET deleteStatus = 1 WHERE msgId = %s", msgId);
+			     break;
+			  case 1:
+			     System.out.println("This message is not in your inbox, try another");
+			     break;
+			  case 2:
+			     query = String.format("UPDATE MESSAGE SET deleteStatus = 3 WHERE msgId = %s", msgId);
+			     break;
+			  case 3:
+                             System.out.println("This message is not in your inbox, try another");
+                             break;
+			  default: 	return;   
+                       }
+		       esql.executeUpdate(query);
+                       System.out.println("Message has been deleted!");
+		       break;
+		    }
+		    else{
+                       switch(Integer.parseInt(delStat.get(0).get(0))){
+                          case 0:
+                             query = String.format("UPDATE MESSAGE SET deleteStatus = 2 WHERE msgId = %s", msgId);
+                             break;
+                          case 1:
+			     query = String.format("UPDATE MESSAGE SET deleteStatus = 3 WHERE msgId = %s", msgId);
+                             break;
+                          case 2:
+                             System.out.println("This message is not in your inbox, try another");
+                             break;
+                          case 3:
+                             System.out.println("This message is not in your inbox, try another");
+                             break;
+                          default:      return;
+		       }
+		       esql.executeUpdate(query);
+                       System.out.println("Message has been deleted!");
+                       
+		    }
+		 break;
+                 case 2: return;
+		 default : System.out.println("Unrecognized choice!"); break; 
+	      }
+	   }
         }catch(Exception e){
          System.err.println (e.getMessage ());
          return;
@@ -1004,7 +1064,8 @@ public class ProfNetwork {
          while(AC) {
             System.out.println("1. Accept Request");
 	    System.out.println("2. Decline Request");
-	    System.out.println("3. Go back");
+	    System.out.println(".........................");
+	    System.out.println("9. Go back");
             switch (readChoice()){
 	       case 1:
 	       System.out.print("Whose request? ");

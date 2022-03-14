@@ -1,5 +1,5 @@
 /*The sequence and trigger are for adding messages in the java script*/
-CREATE SEQUENCE msgID_seq START WITH 1;
+CREATE SEQUENCE msgID_seq START WITH 27813;
 
 CREATE LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION func_name ()
