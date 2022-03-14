@@ -4,4 +4,4 @@ echo "creating db named ... "$DB_NAME
 createdb -h localhost -p $PGPORT $DB_NAME
 pg_ctl status
 
-cp refData_v2/*.csv $PGDATA/
+cp ../../data/*.csv $PGDATA/

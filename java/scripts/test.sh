@@ -1,4 +1,5 @@
 #!/bin/sh
+export DB_NAME=$USER"_DB"
 # Indicate the path of the java compiler to use
 export JAVA_HOME=/usr/csshare/pkgs/jdk1.7.0_17
 export PATH=$JAVA_HOME/bin:$PATH
