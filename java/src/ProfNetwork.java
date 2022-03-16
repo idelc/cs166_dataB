@@ -1,3 +1,5 @@
+// Ivann De La Cruz(SID: 862081651), Kenneth Alvarez(SID: 862026376)
+
 /*
  * Template JAVA User Interface
  * =============================
@@ -253,10 +255,10 @@ public class ProfNetwork {
          boolean keepon = true;
          while(keepon) {
             // These are sample SQL statements
-            System.out.println("MAIN MENU");
+            System.out.println("\nMAIN MENU");
             System.out.println("---------");
-            System.out.println("1. Create user");
-            System.out.println("2. Log in");
+            System.out.println("1. Create User");
+            System.out.println("2. Log In");
             System.out.println("9. < EXIT");
             String authorisedUser = null;
             switch (readChoice()){
@@ -268,25 +270,23 @@ public class ProfNetwork {
             if (authorisedUser != null) {
               boolean usermenu = true;
               while(usermenu) {
-                System.out.println("MAIN MENU");
+                System.out.println("\nMAIN MENU");
                 System.out.println("---------");
 		System.out.println("1. View Profile");
                 System.out.println("2. Go to Friend List");
                 System.out.println("3. Update Profile");
-                System.out.println("4. Write a new message");
-                System.out.println("5. Request Dashboard");
-                System.out.println("6. View messages");
-		System.out.println("7. Search For People");
+                System.out.println("4. Request Dashboard");
+                System.out.println("5. Message Dashboard");
+		System.out.println("6. Search For People");
                 System.out.println(".........................");
                 System.out.println("9. Log out");
                 switch (readChoice()){
                    case 1: displayProf	(esql, authorisedUser); break;
 		   case 2: FriendList	(esql, authorisedUser); break;
                    case 3: UpdateProfile(esql, authorisedUser); break;
-                   case 4: NewMessage	(esql, authorisedUser); break;
-                   case 5: ReqDash	(esql, authorisedUser); break;
-                   case 6: ViewMessage	(esql, authorisedUser); break;
-                   case 7: srcPpl	(esql, authorisedUser); break;
+                   case 4: ReqDash	(esql, authorisedUser); break;
+                   case 5: ViewMessage	(esql, authorisedUser); break;
+                   case 6: srcPpl	(esql, authorisedUser); break;
 		   case 9: usermenu = false; break;
                    default : System.out.println("Unrecognized choice!"); break;
                 }
@@ -349,7 +349,13 @@ public class ProfNetwork {
          System.out.print("\tEnter user email: ");
          String email = in.readLine();
 	 //Creating empty contact\block lists for a user
-	 String query = String.format("INSERT INTO USR (userId, password, email) VALUES ('%s','%s','%s')", login, password, email);
+	 String query = String.format("SELECT * FROM USR WHERE userId = '%s'", login);
+         int validIn = esql.executeQuery(query);
+         if(validIn > 0){
+            System.out.println("\nSomeone already has that username, please try again");
+            return;
+         }
+	 query = String.format("INSERT INTO USR (userId, password, email) VALUES ('%s','%s','%s')", login, password, email);
 	 esql.executeUpdate(query);
 	 System.out.println ("User successfully created!");
 	 }catch(Exception e){
@@ -370,11 +376,11 @@ public class ProfNetwork {
          
          String query = String.format("SELECT * FROM USR WHERE userId = '%s' AND password = '%s'", login, password);
          int userNum = esql.executeQuery(query);
-         if (userNum > 0) {
+         if (userNum == 1) {
                 return login;
          }
 	 else {
-		System.out.print("\tIncorrect userid or password! Please try again! ");
+		System.out.println("\tIncorrect userid or password! Please try again!\n");
 	 }
          return null;
       }catch(Exception e){
@@ -465,7 +471,7 @@ public class ProfNetwork {
 	try{
 	  boolean srchmenu = true;
              while(srchmenu) {
-                System.out.println("SEARCH");
+                System.out.println("\nSEARCH");
                 System.out.println("---------");
                 System.out.println("1. Search By Name");
                 System.out.println("2. View Profile of Person");
@@ -532,7 +538,7 @@ public class ProfNetwork {
 		String fListQ = String.format("SELECT C.connectionId AS Friends FROM connection_usr C WHERE C.userId = '%s' AND C.status = 'Accept' UNION SELECT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND C.status = 'Accept'", authUse, authUse);
                 int fListNum = esql.executeQuery(fListQ);
                 if (fListNum <= 0){
-			System.out.print("No connections yet\n");
+			System.out.println("\nNo connections yet");
                 }
                 else{
                 	esql.executeQueryAndPrintResult(fListQ);
@@ -555,7 +561,7 @@ public class ProfNetwork {
         if (authUse != null) {
               boolean usermenu = true;
               while(usermenu) {
-                System.out.println("FRIENDS");
+                System.out.println("\nFRIENDS");
                 System.out.println("---------");
                 System.out.println("1. View Friend List");
                 System.out.println("2. View Friend's Profile");
@@ -588,12 +594,14 @@ public class ProfNetwork {
            boolean usermenu = true;
            String query;
            while(usermenu) {
+	      System.out.println("\nUPDATE MENU");
+              System.out.println("---------");
               System.out.println("1. Update password ");
               System.out.println("2. Update full name ");
               System.out.println("3. Update work experiences ");
               System.out.println("4. Update educational experiences ");
               System.out.println(".........................");
-	      System.out.println("9. EXIT");
+	      System.out.println("9. Go Back");
               switch (readChoice()) {
                  case 1:
                     System.out.print("\tEnter new password: ");
@@ -809,6 +817,8 @@ public class ProfNetwork {
 	   System.out.print("\nUsername wrong or does not exist");
 	   return;
 	}
+	query = String.format("SELECT * FROM connection_usr C WHERE ((C.userId = '%s' AND C.connectionId = '%s') OR (C.userId = '%s' AND C.connectionId = '%s')) AND C.status IN ('Accept','Request')");
+	if(esql.executeQuery(query) > 0){System.out.println("\nThere is currently an active request between you two. Check your request dashboard!"); return;}
 	List<List<String>> firstLevel  = new ArrayList<List<String>>();
         query= String.format("SELECT DISTINCT C.connectionId FROM connection_usr C WHERE C.userId = '%s' AND (C.status = 'Accept' OR C.status = 'Request') UNION SELECT DISTINCT C.userId FROM connection_usr C WHERE C.connectionId = '%s' AND (C.status = 'Accept' OR C.status = 'Request')", authU, authU);
         // System.out.print("\ngetting list 1");
@@ -864,23 +874,23 @@ public class ProfNetwork {
       try{
         boolean rD = true;
          while(rD) {
-            System.out.println("\nRequest Dashboard");
+            System.out.println("\nREQUEST DASHBOARD");
             System.out.println("---------");
             System.out.println("1. View Requests You Made");
             System.out.println("2. View Incoming Requests");    
-	    System.out.println("3. Send Requests (limit 5 non friends for new users)\n\t");
+	    System.out.println("3. Send Requests (limit 5 non friends for new users)");
 	    System.out.println(".........................");
-	    System.out.println("9. Go Back\n");
+	    System.out.println("9. Go Back");
             switch (readChoice()){
                case 1: 
 		 String query1 = String.format("SELECT C.connectionId AS Recipient, C.status FROM CONNECTION_USR C WHERE C.userId = '%s'", authU);
                  System.out.print("\n");
-                 if(esql.executeQueryAndPrintResult(query1) == 0) {System.out.println("Nothing here\n");};
+                 if(esql.executeQueryAndPrintResult(query1) == 0) {System.out.println("Nothing here\n");}
 		 break;
                case 2:
                  String query2 = String.format("SELECT C.userId AS Sender FROM CONNECTION_USR C WHERE C.connectionId = '%s' AND status = 'Request'", authU);
                  System.out.print("\n");
-                 esql.executeQueryAndPrintResult(query2);
+                 if(esql.executeQueryAndPrintResult(query2) == 0) {System.out.println("Nothing here\n"); break;}
 		 acceptRequest(esql, authU);
                  break;
                case 3: 
@@ -960,6 +970,8 @@ public class ProfNetwork {
         try{
             boolean messMenu = true;
             while(messMenu){
+	       System.out.println("\nMESSAGE DASHBOARD");
+               System.out.println("---------");
                System.out.println("1. Sent Messages");
                System.out.println("2. Receieved Messages");
                System.out.println("3. New Message");

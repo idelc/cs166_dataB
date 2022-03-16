@@ -1,3 +1,5 @@
+/*Ivann De La Cruz(SID: 862081651), Kenneth Alvarez(SID: 862026376)*/
+
 /*The sequence and trigger are for adding messages in the java script*/
 CREATE SEQUENCE msgID_seq START WITH 27813;
 

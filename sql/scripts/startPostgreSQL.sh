@@ -1,3 +1,5 @@
+#Ivann De La Cruz(SID: 862081651), Kenneth Alvarez(SID: 862026376)
+
 #! /bin/bash
 folder=/tmp/$USER
 export PGDATA=$folder/myDB/data
