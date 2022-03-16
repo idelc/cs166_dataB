@@ -1,3 +1,5 @@
+#Ivann De La Cruz(SID: 862081651), Kenneth Alvarez(SID: 862026376)
+
 #! /bin/bash
 export DB_NAME=$USER"_DB"
 echo "creating db named ... "$DB_NAME
